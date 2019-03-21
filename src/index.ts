@@ -16,7 +16,7 @@ export const grpc2grpc = (
   passthrough: boolean
 ): Metadata => {
   if (passthrough) {
-    return callMeta
+    return callMeta.clone()
   }
   const tracingMetadata = new Metadata()
   tracingKeys.forEach(key => {
