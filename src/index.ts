@@ -65,3 +65,23 @@ export const grpc2http = (callMeta: Metadata): IncomingHttpHeaders => {
   })
   return headers
 }
+
+export const http2http = (
+  headers: IncomingHttpHeaders,
+  extHeaders?: IncomingHttpHeaders
+): IncomingHttpHeaders => {
+  const tracingHeaders: IncomingHttpHeaders = {}
+  tracingKeys.forEach(key => {
+    const val: string | string[] = headers[key]
+    if (val && val.length > 0) {
+      tracingHeaders[key] = val
+    }
+  })
+  if (extHeaders) {
+    return {
+      ...tracingHeaders,
+      ...extHeaders
+    }
+  }
+  return tracingHeaders
+}
