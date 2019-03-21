@@ -11,7 +11,13 @@ export const tracingKeys = [
   'x-ot-span-context'
 ]
 
-export const grpc2grpc = (callMeta: Metadata): Metadata => {
+export const grpc2grpc = (
+  callMeta: Metadata,
+  passthrough: boolean
+): Metadata => {
+  if (passthrough) {
+    return callMeta
+  }
   const tracingMetadata = new Metadata()
   tracingKeys.forEach(key => {
     const val = callMeta.get(key)
