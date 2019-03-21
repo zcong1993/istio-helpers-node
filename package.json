@@ -1,6 +1,6 @@
 {
   "name": "@zcong/istio-helpers",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "istio helper functions for node",
   "main": "./dist/index.js",
   "files": [
