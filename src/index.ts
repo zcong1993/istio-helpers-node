@@ -1,7 +1,7 @@
 import { Metadata, MetadataValue } from 'grpc'
 import { IncomingHttpHeaders } from 'http'
 
-export const tracingKeys = [
+export const defaultTracingKeys = [
   'x-request-id',
   'x-b3-traceid',
   'x-b3-spanid',
@@ -13,7 +13,8 @@ export const tracingKeys = [
 
 export const grpc2grpc = (
   callMeta: Metadata,
-  passthrough: boolean
+  tracingKeys: string[] = defaultTracingKeys,
+  passthrough: boolean = false
 ): Metadata => {
   if (passthrough) {
     return callMeta.clone()
@@ -22,15 +23,16 @@ export const grpc2grpc = (
   tracingKeys.forEach(key => {
     const val = callMeta.get(key)
     if (val.length > 0) {
-      const [first, ...rest] = val
-      tracingMetadata.set(key, first)
-      rest.map((val: string) => tracingMetadata.add(key, val))
+      val.map(vv => tracingMetadata.add(key, vv))
     }
   })
   return tracingMetadata
 }
 
-export const http2grpc = (headers: IncomingHttpHeaders): Metadata => {
+export const http2grpc = (
+  headers: IncomingHttpHeaders,
+  tracingKeys: string[] = defaultTracingKeys
+): Metadata => {
   const tracingMetadata = new Metadata()
   tracingKeys.forEach(key => {
     const val: string | string[] = headers[key]
@@ -39,15 +41,16 @@ export const http2grpc = (headers: IncomingHttpHeaders): Metadata => {
       return
     }
     if (Array.isArray(val) && val.length > 0) {
-      const [first, ...rest] = val
-      tracingMetadata.set(key, first)
-      rest.map(val => tracingMetadata.add(key, val))
+      val.map(vv => tracingMetadata.add(key, vv))
     }
   })
   return tracingMetadata
 }
 
-export const grpc2http = (callMeta: Metadata): IncomingHttpHeaders => {
+export const grpc2http = (
+  callMeta: Metadata,
+  tracingKeys: string[] = defaultTracingKeys
+): IncomingHttpHeaders => {
   const headers: IncomingHttpHeaders = {}
   tracingKeys.forEach(key => {
     const val = callMeta.get(key)
@@ -68,7 +71,7 @@ export const grpc2http = (callMeta: Metadata): IncomingHttpHeaders => {
 
 export const http2http = (
   headers: IncomingHttpHeaders,
-  extHeaders?: IncomingHttpHeaders
+  tracingKeys: string[] = defaultTracingKeys
 ): IncomingHttpHeaders => {
   const tracingHeaders: IncomingHttpHeaders = {}
   tracingKeys.forEach(key => {
@@ -77,11 +80,6 @@ export const http2http = (
       tracingHeaders[key] = val
     }
   })
-  if (extHeaders) {
-    return {
-      ...tracingHeaders,
-      ...extHeaders
-    }
-  }
+
   return tracingHeaders
 }
